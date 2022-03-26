@@ -1,0 +1,21 @@
+{
+	"manifest_version": 3,
+	"name": "Seekable Picture In Picture",
+	"description": "A chromium extension created by vincentko",
+	"version": "1.0",
+	
+	"action": {
+		"default_title": "Seekable Picture In Picture",
+		"default_icon": "icon.png",
+		"default_popup": "main.html"
+	},
+	"content_scripts":[
+		{
+			"js": ["injected.js"],
+            "matches": ["<all_urls>"]
+		}
+	],
+	"permissions": [
+		"activeTab"
+	]
+}
