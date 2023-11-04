@@ -37,12 +37,18 @@ function registerHandlers(){
     document.body.removeEventListener("keydown", keydownEventHandler);
     document.body.addEventListener("keydown", keydownEventHandler);
 }
+
+// Nov 2023 note:
+// use e.preventDefault() as a workaround to double calling bug in Brave
+// when the default player page is used. It does seem like 'Space' is 
+// not bugged out (it is called once)
 /**
  * @param {KeyboardEvent} e 
  */
 function keydownEventHandler(e){
     let vid = getVideoElement() || videoInfo;
     if(!vid) return;
+    console.log(e);
 
     if(e.shiftKey && e.key === "~"){
         // Handle success and Failure
@@ -61,7 +67,8 @@ function keydownEventHandler(e){
             subtitleOffsetInput = null;
             subtitleDiv.remove();
             subtitleDiv = null;
-        }
+        }else return;
+        e.preventDefault();
     }else if(e.shiftKey && e.ctrlKey){
         if(e.key === "{"){
             forceControls = true;
@@ -72,13 +79,17 @@ function keydownEventHandler(e){
     if(!isCurrentPageMp4OrMp3() && !forceControls)
         return;
 
-    if(e.key === "ArrowLeft")
+    if(e.key === "ArrowLeft"){
         vid.currentTime -= 5;
-    else if(e.key === "ArrowRight")
+    }else if(e.key === "ArrowRight"){
         vid.currentTime += 5;
-    else if(e.key === "s"){
+    }else if(e.key === "Space"){
+        if(vid.paused) vid.play();
+        else vid.pause();
+    }else if(e.key === "s"){
         selectAndDisplaySubtitles();
-    }
+    }else return;
+    e.preventDefault();
 }
 
 /**
@@ -149,6 +160,7 @@ function selectAndDisplaySubtitles(){
     const localFileSelector = document.createElement("input");
     localFileSelector.type = "file";
     localFileSelector.click();
+    console.log("debg");
     localFileSelector.onchange = async (_)=>{
         if(localFileSelector.files.length == 0)
             return;
