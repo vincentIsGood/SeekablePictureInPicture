@@ -48,7 +48,7 @@ function registerHandlers(){
 function keydownEventHandler(e){
     let vid = getVideoElement() || videoInfo;
     if(!vid) return;
-    console.log(e);
+    // console.log(e);
 
     if(e.shiftKey && e.key === "~"){
         // Handle success and Failure
@@ -160,7 +160,6 @@ function selectAndDisplaySubtitles(){
     const localFileSelector = document.createElement("input");
     localFileSelector.type = "file";
     localFileSelector.click();
-    console.log("debg");
     localFileSelector.onchange = async (_)=>{
         if(localFileSelector.files.length == 0)
             return;
