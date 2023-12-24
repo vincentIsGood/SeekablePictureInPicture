@@ -173,18 +173,16 @@ function selectAndDisplaySubtitles(){
 
         const file = localFileSelector.files.item(0);
         let fileTextContent = await file.text();
-        console.log(file.name);
         if(file.name.endsWith(".vtt")){
             srtEntries = SrtParser.fromVtt(fileTextContent);
-            console.log(srtEntries);
         }else srtEntries = SrtParser.parse(fileTextContent);
+        console.log(srtEntries);
         if(srtEntries.length == 0)
             return;
         
         let subtitleOffset = parseInt($("#offsetInput").value) || 0;
         if(subtitleOffset != 0)
             srtEntries.forEach(entry => entry.offset(subtitleOffset));
-        currentEntry = srtEntries[0];
         createSubtitle();
         searchAndDisplaySubtitle(vid.currentTime);
         subtitleUpdateInterval = setInterval(()=>{
@@ -222,12 +220,13 @@ function createOffsetInputElement(){
 function searchAndDisplaySubtitle(currentTimeSec){
     let currentTimeMs = currentTimeSec * 1000;
     // not changed yet.
-    if(currentTimeMs >= currentEntry.from.total() && currentTimeMs <= currentEntry.to.total())
+    if(currentEntry && currentTimeMs >= currentEntry.from.total() && currentTimeMs <= currentEntry.to.total())
         return;
     // bin search is significantly faster, though.
     for(let entry of srtEntries){
         if(currentTimeMs >= entry.from.total() && currentTimeMs <= entry.to.total()){
             displaySubtitle(entry.subtitle);
+            currentEntry = entry;
             return;
         }
     }

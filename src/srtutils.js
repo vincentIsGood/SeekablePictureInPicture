@@ -44,14 +44,12 @@ class Timestamp{
         let numColons = str.split(":").length-1;
 
         let newEntry = new Timestamp();
-        let colonIndex = 0;
-        let hours = 0, mins = 0;
-        if(numColons == 2)
-            hours = parseInt(str.substring(0, colonIndex = str.indexOf(':', colonIndex)));
-        if(numColons == 1)
-            mins = parseInt(str.substring(colonIndex+1, colonIndex = str.indexOf(':', colonIndex+1)));
-        let secs = parseInt(str.substring(colonIndex+1, colonIndex = str.indexOf(',', colonIndex+1)));
-        let milsecs = parseInt(str.substring(colonIndex+1));
+        const result = str.match(/(..)?:?(..):(..),(...)/);
+        if(!result) throw new Error("Bad timestamp format");
+        let hours = parseInt(result[1] ?? 0);
+        let mins = parseInt(result[2] ?? 0);
+        let secs = parseInt(result[3] ?? 0);
+        let milsecs = parseInt(result[4] ?? 0);
         newEntry.totalMs = hours * 60 * 60 * 1000 + mins * 60 * 1000 + secs * 1000 + milsecs;
         newEntry.originalMs = newEntry.totalMs;
         return newEntry;
