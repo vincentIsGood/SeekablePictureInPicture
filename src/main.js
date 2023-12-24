@@ -171,8 +171,13 @@ function selectAndDisplaySubtitles(){
         if(subtitleDiv != null)
             displaySubtitle(""); // clear subtitle div
 
-        let fileTextContent = await localFileSelector.files.item(0).text();
-        srtEntries = SrtParser.parse(fileTextContent);
+        const file = localFileSelector.files.item(0);
+        let fileTextContent = await file.text();
+        console.log(file.name);
+        if(file.name.endsWith(".vtt")){
+            srtEntries = SrtParser.fromVtt(fileTextContent);
+            console.log(srtEntries);
+        }else srtEntries = SrtParser.parse(fileTextContent);
         if(srtEntries.length == 0)
             return;
         
