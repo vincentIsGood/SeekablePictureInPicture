@@ -38,8 +38,8 @@ function isInIframe(){
  * @returns {HTMLVideoElement | null}
  */
 function getVideoElement(){
-    if(videoElement)
-        return videoElement;
+    // if(videoElement)
+    //     return videoElement;
     return videoElement = $("video");
 }
 
