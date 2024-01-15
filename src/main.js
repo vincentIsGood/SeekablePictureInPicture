@@ -8,12 +8,21 @@ let forceControls = false;
 
 window.addEventListener("load", ()=>{
     initHrefObserver();
-    
-    log("Seekable Picture In Picture is enabled");
+
+    setTimeout(()=>{
+        log("[Loaded] Seekable Picture In Picture is enabled");
+        if(isCurrentPageMp4OrMp3())
+            createOffsetInputElement();
+        registerHandlers();
+    }, 2000);
+});
+
+setTimeout(()=>{
+    log("[Forced] Seekable Picture In Picture is enabled");
     if(isCurrentPageMp4OrMp3())
         createOffsetInputElement();
     registerHandlers();
-});
+}, 5000);
 
 chrome.runtime.onMessage.addListener((msg)=>{
     if(msg.name !== "mainchannel") return;
@@ -51,14 +60,28 @@ function keydownEventHandler(e){
     // console.log(e);
 
     if(e.shiftKey && e.key === "~"){
-        // Handle success and Failure
-        vid.requestPictureInPicture()
-            .then(pipRegisterEvents)
-            .catch(pipBackupFeature);
+        if(vid instanceof HTMLVideoElement){
+            // Handle success and Failure
+            vid.requestPictureInPicture()
+                .then((pip)=>pipRegisterEvents(pip))
+                .catch(pipBackupFeature);
+        }else{
+            sendMessageToBackground({
+                name: "subframe_cmd", 
+                data: {
+                    action: "pip"
+                }
+            });
+        }
     }
 
     // Force the use of subtitle
-    if(e.shiftKey && !e.ctrlKey){
+    if(e.shiftKey && e.ctrlKey){
+        if(e.key === "{"){
+            forceControls = true;
+        }else if(e.key === "}")
+            forceControls = false;
+    }else if(e.shiftKey){
         if(e.key === "{"){
             createOffsetInputElement();
             selectAndDisplaySubtitles();
@@ -69,11 +92,6 @@ function keydownEventHandler(e){
             subtitleDiv = null;
         }else return;
         e.preventDefault();
-    }else if(e.shiftKey && e.ctrlKey){
-        if(e.key === "{"){
-            forceControls = true;
-        }else if(e.key === "}")
-            forceControls = false;
     }
 
     if(!isCurrentPageMp4OrMp3() && !forceControls)
@@ -95,8 +113,10 @@ function keydownEventHandler(e){
 /**
  * @param {PictureInPictureWindow} pipWindow 
  */
-function pipRegisterEvents(pipWindow){
-    const vid = getVideoElement();
+function pipRegisterEvents(pipWindow, videoElement = null){
+    const vid = getVideoElement() || videoElement;
+    if(!vid) return;
+    
     navigator.mediaSession.setActionHandler("previoustrack", null);
     navigator.mediaSession.setActionHandler("nexttrack", null);
     
