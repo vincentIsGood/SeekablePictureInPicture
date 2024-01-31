@@ -5,6 +5,7 @@ let oldHref = window.location.href;
 let videoInfo;
 
 let forceControls = false;
+let firstMessage = true;
 
 window.addEventListener("load", ()=>{
     initHrefObserver();
@@ -27,6 +28,10 @@ setTimeout(()=>{
 chrome.runtime.onMessage.addListener((msg)=>{
     if(msg.name !== "mainchannel") return;
     videoInfo = msg.data;
+    if(firstMessage){
+        console.log("[+] Received video info: ", videoInfo);
+        firstMessage = false;
+    }
 });
 
 function initHrefObserver(){
@@ -48,14 +53,21 @@ function registerHandlers(){
 }
 
 // Nov 2023 note:
-// use e.preventDefault() as a workaround to double calling bug in Brave
-// when the default player page is used. It does seem like 'Space' is 
-// not bugged out (it is called once)
+// use e.preventDefault() as a workaround to double keydown event bug 
+// in Brave when the default player page is used. It does seem like 
+// 'Space' is not bugged out (it is called once)
 /**
  * @param {KeyboardEvent} e 
  */
 function keydownEventHandler(e){
     let vid = getVideoElement() || videoInfo;
+    if(!vid && e.shiftKey && e.key === "~"){
+        firstMessage = true;
+        sendMessageToBackground({
+            name: "subframe_cmd", 
+            data: {action: "retry"}
+        });
+    }
     if(!vid) return;
     // console.log(e);
 
@@ -68,9 +80,7 @@ function keydownEventHandler(e){
         }else{
             sendMessageToBackground({
                 name: "subframe_cmd", 
-                data: {
-                    action: "pip"
-                }
+                data: {action: "pip"}
             });
         }
     }
