@@ -12,7 +12,7 @@ window.addEventListener("load", ()=>{
 
     setTimeout(()=>{
         log("[Loaded] Seekable Picture In Picture is enabled");
-        if(isCurrentPageMp4OrMp3())
+        if(isCurrentPageVideo())
             createOffsetInputElement();
         registerHandlers();
     }, 2000);
@@ -20,7 +20,7 @@ window.addEventListener("load", ()=>{
 
 setTimeout(()=>{
     log("[Forced] Seekable Picture In Picture is enabled");
-    if(isCurrentPageMp4OrMp3())
+    if(isCurrentPageVideo())
         createOffsetInputElement();
     registerHandlers();
 }, 5000);
@@ -48,6 +48,7 @@ function initHrefObserver(){
  * @returns success or not
  */
 function registerHandlers(){
+    console.log("[*] Keydown event handler is being registered");
     document.body.removeEventListener("keydown", keydownEventHandler);
     document.body.addEventListener("keydown", keydownEventHandler);
 }
@@ -104,7 +105,7 @@ function keydownEventHandler(e){
         e.preventDefault();
     }
 
-    if(!isCurrentPageMp4OrMp3() && !forceControls)
+    if(!isCurrentPageVideo() && !forceControls)
         return;
 
     if(e.key === "ArrowLeft"){

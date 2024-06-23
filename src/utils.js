@@ -43,14 +43,17 @@ function $(query){
     return document.querySelector(query);
 }
 
-function isCurrentPageMp4OrMp3(){
+function isCurrentPageVideo(){
     const dotPosition = window.location.href.lastIndexOf(".");
     if(dotPosition == -1) return false;
 
     const urlFileExtension = window.location.href.substring(dotPosition);
-    if(urlFileExtension === ".mp4" || urlFileExtension === ".mp3")
-        return true;
-    return false;
+    switch(urlFileExtension){
+        case ".webm":
+        case ".mp4":
+        case ".mp3": return true;
+        default: return false;
+    }
 }
 
 function isInIframe(){
