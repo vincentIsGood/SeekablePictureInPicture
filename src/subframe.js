@@ -37,13 +37,7 @@ window.addEventListener("load", ()=>{
 
 function startVideoObserver(){
     // createDebugLog();
-    log("[+] Subframe js executed", appendDebugLog);
-    sendMessageToBackground({
-        name: "mainchannel",
-        data: {"action": "none"},
-    });
-
-    console.log("[*] Starting video observer");
+    log("[SUBFRAME] Starting video observer");
     retryCount = 0;
     const videoObserver = setInterval(()=>{
         video = getVideoElement();
@@ -52,7 +46,7 @@ function startVideoObserver(){
             return;
         }
         if(video?.currentSrc){
-            console.log("[+] Video found, turning off subframe observer: ", window.self.location.href);
+            log(`[+] Video found, turning off subframe observer: ${window.self.location.href}`, appendDebugLog);
             setup();
             retryCount = maxRetryCount;
             clearInterval(videoObserver);
@@ -66,8 +60,7 @@ function setup(){
     const canSendToMainFrame = video != null && isInIframe();
     if(!canSendToMainFrame) return;
     
-    // alert("setting up: " + getVideoElement().currentSrc);
-    console.log("[+] Sending video info to main: " + video.currentSrc);
+    log(`[+] Sending video info to main: ${video.currentSrc}`, appendDebugLog);
     setInterval(()=>{
         if(video.paused && !firstMessage)
             return;
