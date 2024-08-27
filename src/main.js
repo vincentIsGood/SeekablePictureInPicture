@@ -8,36 +8,44 @@ let forceControls = false;
 let firstMessage = true;
 
 window.addEventListener("load", ()=>{
+    console.clear = () => {};
     initHrefObserver();
+    // createDebugLog(); // UNCOMMENT TO ENABLE DEBUG CONSOLE
 
     setTimeout(()=>{
-        log("[Loaded] Seekable Picture In Picture is enabled");
+        log("[Loaded] Seekable Picture In Picture is enabled", appendDebugLog);
         if(isCurrentPageVideo())
             createOffsetInputElement();
         registerHandlers();
     }, 2000);
+    
+    try{
+        chrome.runtime.onMessage.addListener((msg)=>{
+            log("[SUBFRAME] " + JSON.stringify(msg), appendDebugLog);
+            if(msg.name !== "mainchannel") return;
+
+            videoInfo = msg.data;
+            if(firstMessage){
+                log(`[+] Received video info: ${videoInfo}`, appendDebugLog);
+                firstMessage = false;
+            }
+        });
+    }catch(e){
+        log(`[-] Extension Error: ${e}`, appendDebugLog);
+    }
 });
 
 setTimeout(()=>{
-    log("[Forced] Seekable Picture In Picture is enabled");
+    log("[Forced] Seekable Picture In Picture is enabled", appendDebugLog);
     if(isCurrentPageVideo())
         createOffsetInputElement();
     registerHandlers();
 }, 5000);
 
-chrome.runtime.onMessage.addListener((msg)=>{
-    if(msg.name !== "mainchannel") return;
-    videoInfo = msg.data;
-    if(firstMessage){
-        console.log("[+] Received video info: ", videoInfo);
-        firstMessage = false;
-    }
-});
-
 function initHrefObserver(){
     setInterval(()=>{
         if(window.location.href != oldHref){
-            log("New page detected, reloading");
+            log("[*] New page detected, reloading", appendDebugLog);
             registerHandlers();
             oldHref = window.location.href;
         }
@@ -48,7 +56,7 @@ function initHrefObserver(){
  * @returns success or not
  */
 function registerHandlers(){
-    console.log("[*] Keydown event handler is being registered");
+    log("[*] Keydown event handler is being registered", appendDebugLog);
     document.body.removeEventListener("keydown", keydownEventHandler);
     document.body.addEventListener("keydown", keydownEventHandler);
 }
@@ -63,6 +71,7 @@ function registerHandlers(){
 function keydownEventHandler(e){
     let vid = getVideoElement() || videoInfo;
     if(!vid && e.shiftKey && e.key === "~"){
+        log("[*] Requesting video info", appendDebugLog);
         firstMessage = true;
         sendMessageToBackground({
             name: "subframe_cmd", 
@@ -70,9 +79,9 @@ function keydownEventHandler(e){
         });
     }
     if(!vid) return;
-    // console.log(e);
 
     if(e.shiftKey && e.key === "~"){
+        log("[+] Requesting pip", appendDebugLog);
         if(vid instanceof HTMLVideoElement){
             // Handle success and Failure
             vid.requestPictureInPicture()
@@ -89,18 +98,21 @@ function keydownEventHandler(e){
     // Force the use of subtitle
     if(e.shiftKey && e.ctrlKey){
         if(e.key === "{"){
+            log("[*] Force controls", appendDebugLog);
             forceControls = true;
-        }else if(e.key === "}")
+        }else if(e.key === "}"){
             forceControls = false;
+        }
     }else if(e.shiftKey){
         if(e.key === "{"){
+            log("[*] Enabling subtitles", appendDebugLog);
             createOffsetInputElement();
             selectAndDisplaySubtitles();
         }else if(e.key === "}"){
             subtitleOffsetInput.remove();
             subtitleOffsetInput = null;
-            subtitleDiv.remove();
-            subtitleDiv = null;
+            subtitleEle.remove();
+            subtitleEle = null;
         }else return;
         e.preventDefault();
     }
@@ -125,6 +137,7 @@ function keydownEventHandler(e){
  * @param {PictureInPictureWindow} pipWindow 
  */
 function pipRegisterEvents(pipWindow, videoElement = null){
+    log("[+] Register pip events", appendDebugLog);
     const vid = getVideoElement() || videoElement;
     if(!vid) return;
     
@@ -141,28 +154,28 @@ function pipRegisterEvents(pipWindow, videoElement = null){
 
 let createdVideoElement = null;
 function pipBackupFeature(e){
-    console.log("[-] Error occured, reason:", e);
-    console.log("[*] Trying to read canvas, if any");
+    log(`[-] Error occured, reason: ${e}`, appendDebugLog);
+    log("[*] Trying to read canvas, if any", appendDebugLog);
     if(createdVideoElement){
-        console.log("[*] An existing canvas relates to a created video element");
-        console.log("[+] Trying to request PiP on it");
+        log("[*] An existing canvas relates to a created video element", appendDebugLog);
+        log("[+] Trying to request PiP on it", appendDebugLog);
         createdVideoElement.requestPictureInPicture();
         return;
     }
     const canvas = $("canvas");
     if(!canvas) 
         return;
-    console.log("[+] Found canvas, creating a new video element to contain it");
+    log("[+] Found canvas, creating a new video element to contain it", appendDebugLog);
     let newVid = document.createElement("video");
     createdVideoElement = newVid;
     
     const mediaStream = canvas.captureStream();
     newVid.srcObject = mediaStream;
-    console.log("[*] Wait a sec...");
+    log("[*] Wait a sec...", appendDebugLog);
     setTimeout(()=>{
         newVid.play();
         newVid.requestPictureInPicture().catch((e)=>{
-            console.log("[-] Error occured, reason:", e);
+            log(`[-] Error occured, reason: ${e}`, appendDebugLog);
         });
     }, 1000);
 }
@@ -176,7 +189,7 @@ let subtitleOffsetInput = null;
 /**
  * @type {HTMLDivElement}
  */
-let subtitleDiv = null;
+let subtitleEle = null;
 /**
  * @type {SrtEntry[]}
  */
@@ -185,7 +198,7 @@ let currentEntry;
 function selectAndDisplaySubtitles(){
     let vid = getVideoElement() || videoInfo;
     if(vid == null){
-        log("Still cannot find video element.");
+        log("[-] Still cannot find video element.", appendDebugLog);
         return;
     }
     const localFileSelector = document.createElement("input");
@@ -199,7 +212,7 @@ function selectAndDisplaySubtitles(){
             clearInterval(subtitleUpdateInterval);
             subtitleUpdateInterval = -1;
         }
-        if(subtitleDiv != null)
+        if(subtitleEle != null)
             displaySubtitle(""); // clear subtitle div
 
         const file = localFileSelector.files.item(0);
@@ -207,10 +220,10 @@ function selectAndDisplaySubtitles(){
         if(file.name.endsWith(".vtt")){
             srtEntries = SrtParser.fromVtt(fileTextContent);
         }else srtEntries = SrtParser.parse(fileTextContent);
-        console.log(srtEntries);
+        // log(srtEntries, appendDebugLog);
         if(srtEntries.length == 0)
             return;
-        
+
         let subtitleOffset = parseInt($("#offsetInput").value) || 0;
         if(subtitleOffset != 0)
             srtEntries.forEach(entry => entry.offset(subtitleOffset));
@@ -264,24 +277,23 @@ function searchAndDisplaySubtitle(currentTimeSec){
 }
 
 function createSubtitle(){
-    if(subtitleDiv != null)
+    if(subtitleEle != null)
         return;
-    subtitleDiv = document.createElement("div");
-    subtitleDiv.id = "subtitle-display";
-    // styling happens dynamically at `displaySubtitle`
-    document.body.append(subtitleDiv);
+    subtitleEle = document.createElement("div");
+    subtitleEle.id = "subtitle-display";
+    document.body.append(subtitleEle);
 }
 
 function displaySubtitle(text = "Dummy text"){
-    subtitleDiv.textContent = text;
+    subtitleEle.textContent = text;
     
     let videoRect = (getVideoElement() || $("iframe")).getBoundingClientRect();
     let topLoc = videoRect.bottom;
     let centerLoc = videoRect.width/2 + videoRect.left;
     // let size = parseInt(window.getComputedStyle(document.body).fontSize);
-    // centerLoc -= (size * subtitleDiv.textContent.length);
-    centerLoc -= subtitleDiv.getBoundingClientRect().width / 2;
-    subtitleDiv.style = `
+    // centerLoc -= (size * subtitleEle.textContent.length);
+    centerLoc -= subtitleEle.getBoundingClientRect().width / 2;
+    subtitleEle.style = `
         position: absolute;
         background: rgba(0, 0, 0, 0.5);
         color: white;

@@ -3,35 +3,45 @@ const debug = true;
 let videoElement = null;
 
 /**
- * @param {Object} msg 
- */
-function log(msg){
-    if(debug){
-        console.log("[*] " + msg);
-        logDiv?.append(msg);
-    }
-}
-
-/**
  * @type {HTMLDivElement}
  */
-let logDiv;
-function createLog(){
-    if(logDiv != null)
+// @ts-ignore
+let debugLogEle = null;
+
+function createDebugLog(){
+    if(debugLogEle != null)
         return;
-    logDiv = document.createElement("div");
-    logDiv.id = "log-display";
+    debugLogEle = document.createElement("div");
+    debugLogEle.id = "debug-log-display";
+    document.body.append(debugLogEle);
+    appendDebugLog("[PiP-INFO] Created debug log");
+}
+
+function appendDebugLog(text = "Dummy text"){
+    if(!debugLogEle) return;
     // @ts-ignore
-    logDiv.style = `
+    debugLogEle.style = `
         position: absolute;
         background: rgba(0, 0, 0, 0.5);
         color: white;
-        font-size: 16px;
-        top: 0px;
-        right: 0px;
-        width: 16rem;
+        font-size: 15px;
+        right: 0;
+        top: 0;
+        width: 20rem;
+        white-space: pre;
     `;
-    document.body.append(logDiv);
+    debugLogEle.textContent += text + "\n";
+}
+
+/**
+ * @param {Object} msg 
+ * @param {(msg: string)=>void} callback
+ */
+function log(msg, callback){
+    if(debug){
+        console.log(msg);
+        callback?.(msg);
+    }
 }
 
 /**

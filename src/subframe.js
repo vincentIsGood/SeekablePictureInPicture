@@ -4,32 +4,45 @@ let maxRetryCount = 2;
 let video;
 let firstMessage = true;
 
-window.addEventListener("load", startVideoObserver);
+window.addEventListener("load", ()=>{
+    setTimeout(()=>{
+        startVideoObserver();
+    }, 1000);
 
-chrome.runtime.onMessage.addListener((msg)=>{
-    if(msg.name !== "subframe_cmd") return;
-    /**
-     * @type {VideoCommandMessage}
-     */
-    const data = msg.data;
-
-    if(data.action == "retry"){
-        if(retryCount >= maxRetryCount){
-            firstMessage = true;
-            startVideoObserver();
-        }
-        return;
-    }
+    chrome.runtime.onMessage.addListener((msg)=>{
+        if(msg.name !== "subframe_cmd") return;
+        log(JSON.stringify(msg), appendDebugLog);
     
-    if(!video) return;
-    switch(data.action){
-        case "pip": video.requestPictureInPicture().then((pip)=>pipRegisterEvents(pip, video)); break;
-        case "seekforward": break;
-        case "seekbackward": break;
-    }
+        /**
+         * @type {VideoCommandMessage}
+         */
+        const data = msg.data;
+    
+        if(data.action == "retry"){
+            if(retryCount >= maxRetryCount){
+                firstMessage = true;
+                startVideoObserver();
+            }
+            return;
+        }
+        
+        if(!video) return;
+        switch(data.action){
+            case "pip": video.requestPictureInPicture().then((pip)=>pipRegisterEvents(pip, video)); break;
+            case "seekforward": break;
+            case "seekbackward": break;
+        }
+    });
 });
 
 function startVideoObserver(){
+    // createDebugLog();
+    log("[+] Subframe js executed", appendDebugLog);
+    sendMessageToBackground({
+        name: "mainchannel",
+        data: {"action": "none"},
+    });
+
     console.log("[*] Starting video observer");
     retryCount = 0;
     const videoObserver = setInterval(()=>{
