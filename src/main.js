@@ -300,5 +300,6 @@ function displaySubtitle(text = "Dummy text"){
         font-size: 26px;
         top: ${topLoc}px;
         left: ${centerLoc}px;
+        z-index: 999;
     `;
 }

@@ -1,5 +1,5 @@
 ///@ts-check
-const debug = true;
+const debug = false;
 let videoElement = null;
 
 /**
