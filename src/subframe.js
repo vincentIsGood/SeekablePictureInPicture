@@ -1,5 +1,5 @@
-let retryCount = 0;
-let maxRetryCount = 2;
+const maxRetryCount = 2;
+retryCount = 0;
 
 let video;
 let firstMessage = true;

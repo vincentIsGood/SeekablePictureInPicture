@@ -243,6 +243,8 @@ function selectAndDisplaySubtitles(){
 function createOffsetInputElement(){
     if(subtitleOffsetInput != null)
         return;
+    let videoRect = (getVideoElement() || $("iframe")).getBoundingClientRect();
+    let topLoc = videoRect.bottom;
     subtitleOffsetInput = document.createElement("input");
     subtitleOffsetInput.id = "offsetInput";
     subtitleOffsetInput.placeholder = "subtitle offset ms";
@@ -251,9 +253,10 @@ function createOffsetInputElement(){
         border: none;
         width: 10rem;
         position: absolute;
-        left: 5px;
-        bottom: 5px; 
+        top: ${topLoc}px;
+        left: 0px;
         color: white;
+        z-index: 999;
     `;
     document.body.append(subtitleOffsetInput);
 }
