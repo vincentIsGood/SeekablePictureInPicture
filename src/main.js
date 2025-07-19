@@ -291,7 +291,7 @@ function displaySubtitle(text = "Dummy text"){
     subtitleEle.textContent = text;
     
     let videoRect = (getVideoElement() || $("iframe")).getBoundingClientRect();
-    let topLoc = videoRect.bottom;
+    let topLoc = window.scrollY + videoRect.bottom;
     let centerLoc = videoRect.width/2 + videoRect.left;
     // let size = parseInt(window.getComputedStyle(document.body).fontSize);
     // centerLoc -= (size * subtitleEle.textContent.length);
