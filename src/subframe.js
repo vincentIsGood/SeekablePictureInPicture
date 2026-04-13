@@ -1,8 +1,8 @@
-const maxRetryCount = 2;
+maxRetryCount = 2;
 retryCount = 0;
 
-let video;
-let firstMessage = true;
+video = null;
+firstMessage = true;
 
 window.addEventListener("load", ()=>{
     setTimeout(()=>{
@@ -28,7 +28,10 @@ window.addEventListener("load", ()=>{
         
         if(!video) return;
         switch(data.action){
-            case "pip": video.requestPictureInPicture().then((pip)=>pipRegisterEvents(pip, video)); break;
+            case "pip": 
+                // createNewPipWindow(vid);
+                video.requestPictureInPicture().then((pip)=>pipRegisterEvents(pip, video)); 
+                break;
             case "seekforward": break;
             case "seekbackward": break;
         }

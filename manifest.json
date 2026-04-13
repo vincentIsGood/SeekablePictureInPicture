@@ -17,6 +17,7 @@
 			"js": [
 				"src/utils.js",
 				"src/srtutils.js",
+				"src/piputils.js",
 				"src/main.js"
 			],
             "matches": ["<all_urls>"]
@@ -24,6 +25,7 @@
 		{
 			"js": [
 				"src/utils.js",
+				"src/piputils.js",
 				"src/subframe.js"
 			],
             "matches": ["<all_urls>"],

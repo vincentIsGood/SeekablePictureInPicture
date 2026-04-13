@@ -89,6 +89,13 @@ class SrtEntry{
     }
 
     /**
+     * @param {string} str
+     */
+    static removeHtmlTags(str){
+        return str.replace(/<[^>]*>?/gm, '').replace(/<\/[^>]*>?/gm, '');
+    }
+
+    /**
      * Takes 1 entry.
      * 
      * Takes format:
@@ -111,7 +118,7 @@ class SrtEntry{
         for(let i = 2; i < lines.length; i++){
             subtitle += lines[i].trim() + " ";
         }
-        newEntry.subtitle = subtitle.trim();
+        newEntry.subtitle = SrtEntry.removeHtmlTags(subtitle.trim());
         return newEntry;
     }
 

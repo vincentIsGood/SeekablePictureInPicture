@@ -84,9 +84,8 @@ function keydownEventHandler(e){
         log("[+] Requesting pip", appendDebugLog);
         if(vid instanceof HTMLVideoElement){
             // Handle success and Failure
-            vid.requestPictureInPicture()
-                .then((pip)=>pipRegisterEvents(pip))
-                .catch(pipBackupFeature);
+            // createNewPipWindow(vid);
+            vid.requestPictureInPicture().then((pip)=>pipRegisterEvents(pip)).catch(pipBackupFeature);
         }else{
             sendMessageToBackground({
                 name: "subframe_cmd", 
