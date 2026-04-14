@@ -269,9 +269,17 @@ function searchAndDisplaySubtitle(currentTimeSec){
     if(currentEntry && currentTimeMs >= currentEntry.from.total() && currentTimeMs <= currentEntry.to.total())
         return;
     // bin search is significantly faster, though.
-    for(let entry of srtEntries){
+    for(let i = 0; i < srtEntries.length; i++){
+        let entry = srtEntries[i];
+        let nextEntry = srtEntries[i+1];
         if(currentTimeMs >= entry.from.total() && currentTimeMs <= entry.to.total()){
-            displaySubtitle(entry.subtitle);
+            let finalSubtitleText = entry.subtitle;
+            if(nextEntry && nextEntry.from.total() == entry.from.total() && nextEntry.to.total() == entry.to.total()){
+                // Same timestamp, display together
+                finalSubtitleText += "\n" + nextEntry.subtitle;
+                i++;
+            }
+            displaySubtitle(finalSubtitleText);
             currentEntry = entry;
             return;
         }
